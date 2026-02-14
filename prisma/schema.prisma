@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model cart_items {
+  item_id    BigInt   @id @default(autoincrement())
+  cart_id    BigInt
+  product_id BigInt
+  quantity   Int
+  carts      carts    @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade, onUpdate: NoAction)
+  products   products @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([cart_id, product_id])
+}
+
+model carts {
+  cart_id    BigInt       @id @default(autoincrement())
+  user_id    BigInt
+  status     cart_status? @default(active)
+  created_at DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?    @default(now()) @db.Timestamptz(6)
+  cart_items cart_items[]
+  users      users        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model products {
+  product_id  BigInt       @id @default(autoincrement())
+  name        String       @db.VarChar(200)
+  description String?
+  price       Decimal      @db.Decimal(12, 2)
+  stock       Int          @default(0)
+  image_url   String?
+  created_at  DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?    @default(now()) @db.Timestamptz(6)
+  cart_items  cart_items[]
+}
+
+model users {
+  user_id    BigInt     @id @default(autoincrement())
+  first_name String     @db.VarChar(100)
+  last_name  String     @db.VarChar(100)
+  email      String     @unique @db.VarChar(150)
+  password   String
+  role       user_role? @default(customer)
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @default(now()) @db.Timestamptz(6)
+  carts      carts[]
+}
+
+enum cart_status {
+  active
+  checked_out
+}
+
+enum order_status {
+  pending
+  paid
+  shipped
+  completed
+  cancelled
+}
+
+enum user_role {
+  admin
+  customer
+}
