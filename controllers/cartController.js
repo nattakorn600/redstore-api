@@ -80,6 +80,40 @@ exports.addToCart = async (req, res) => {
   }
 };
 
+exports.checkoutCart = async (req, res) => {
+  try {
+    const userId = BigInt(req.user.userId);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const cart = await tx.carts.findFirst({
+        where: { user_id: userId, status: 'active' },
+        include: { cart_items: true }
+      });
+
+      if (!cart || cart.cart_items.length === 0) {
+        throw new Error('No active cart or cart is empty');
+      }
+
+      const updatedCart = await tx.carts.update({
+        where: { cart_id: cart.cart_id },
+        data: { 
+          status: 'checked_out',
+          updated_at: new Date()
+        }
+      });
+
+      return updatedCart;
+    });
+
+    res.status(200).json({ 
+      message: "Checkout successful", 
+      cartId: result.cart_id.toString() 
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 // --- 2. Decrease Quantity (ลดจำนวนสินค้าใน Cart / คืนสต็อก) ---
 exports.decreaseQuantity = async (req, res) => {
   try {

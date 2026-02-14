@@ -38,6 +38,7 @@ app.delete('/api/products/:id', authenticateToken, productController.deleteProdu
 app.get('/api/cart', authenticateToken, cartController.getMyCart);
 app.get('/api/cart/count', authenticateToken, cartController.getCartCount);
 app.post('/api/cart/add', authenticateToken, cartController.addToCart);
+app.post('/api/cart/checkout', authenticateToken, cartController.addToCart);
 app.patch('/api/cart/items/:item_id/decrease', authenticateToken, cartController.decreaseQuantity);
 app.delete('/api/cart/items/:item_id', authenticateToken, cartController.removeFromCart);
 
